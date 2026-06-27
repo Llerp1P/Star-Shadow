@@ -1,6 +1,6 @@
 import os
 import discord
-from discord.ext import commands
+from discord import app_commands
 
 TOKEN = os.environ["TOKEN"]
 
@@ -8,34 +8,60 @@ intents = discord.Intents.default()
 intents.guilds = True
 intents.members = True
 
-bot = commands.Bot(
-    command_prefix="!",
-    intents=intents
-)
+class MyClient(discord.Client):
+    def __init__(self):
+        super().__init__(intents=intents)
+        self.tree = app_commands.CommandTree(self)
 
-@bot.event
+    async def setup_hook(self):
+        await self.tree.sync()
+
+client = MyClient()
+
+@client.event
 async def on_ready():
-    print(f"Logged in as {bot.user}")
+    print(f"Logged in as {client.user}")
 
-@bot.command(name="rename")
-@commands.has_permissions(manage_nicknames=True)
-async def rename(ctx, member: discord.Member, *, new_name: str):
+@client.tree.command(
+    name="rename",
+    description="ユーザーのサーバーニックネームを変更します"
+)
+@app_commands.describe(
+    member="名前を変更するユーザー",
+    new_name="新しいニックネーム"
+)
+async def rename(
+    interaction: discord.Interaction,
+    member: discord.Member,
+    new_name: str
+):
+    if not interaction.user.guild_permissions.manage_nicknames:
+        await interaction.response.send_message(
+            "❌ ニックネーム変更権限がありません。",
+            ephemeral=True
+        )
+        return
+
     try:
         await member.edit(
             nick=new_name,
-            reason=f"Changed by {ctx.author}"
+            reason=f"Changed by {interaction.user}"
         )
 
-        await ctx.send(
+        await interaction.response.send_message(
             f"✅ {member.mention} の名前を「{new_name}」に変更しました。"
         )
 
     except discord.Forbidden:
-        await ctx.send(
-            "❌ 権限不足です。BOTのロールを対象ユーザーより上にしてください。"
+        await interaction.response.send_message(
+            "❌ BOTのロールを対象ユーザーより上に配置してください。",
+            ephemeral=True
         )
 
     except Exception as e:
-        await ctx.send(f"❌ エラー: {e}")
+        await interaction.response.send_message(
+            f"❌ エラー: {e}",
+            ephemeral=True
+        )
 
-bot.run(TOKEN)
+client.run(TOKEN)
