@@ -86,6 +86,8 @@ async def rename(
         return
 
     try:
+        old_name = member.display_name
+
         await member.edit(
             nick=new_name,
             reason=f"Changed by {interaction.user}"
@@ -93,12 +95,13 @@ async def rename(
 
         print(
             f"[RENAME] "
-            f"{interaction.user} -> "
-            f"{member} = {new_name}"
+            f"{interaction.user} changed "
+            f"{old_name} -> {new_name}"
         )
 
         await interaction.response.send_message(
-            f"✅ {member.mention} の名前を「{new_name}」に変更しました。"
+            f'✅ 「{old_name}」の名前を「{new_name}」に変更しました。',
+            ephemeral=True
         )
 
     except discord.Forbidden:
