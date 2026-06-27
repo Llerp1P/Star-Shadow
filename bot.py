@@ -6,7 +6,6 @@ TOKEN = os.environ["TOKEN"]
 
 intents = discord.Intents.default()
 intents.guilds = True
-intents.members = True
 
 class MyClient(discord.Client):
     def __init__(self):
