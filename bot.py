@@ -8,15 +8,11 @@ from discord import app_commands
 
 TOKEN = os.environ["TOKEN"]
 
-# あなたのサーバーID
-GUILD_ID = 1497104058987708547
-
 # =====================
 # INTENTS
 # =====================
 
 intents = discord.Intents.default()
-intents.guilds = True
 
 # =====================
 # CLIENT
@@ -30,21 +26,21 @@ class MyClient(discord.Client):
     async def setup_hook(self):
         print("[SETUP] setup_hook started")
 
-        guild = discord.Object(id=GUILD_ID)
-
         try:
-            synced = await self.tree.sync(guild=guild)
+            print("[SETUP] Syncing global commands...")
+
+            synced = await self.tree.sync()
 
             print(
-                f"[SETUP] Synced {len(synced)} command(s) "
-                f"to guild {GUILD_ID}"
+                f"[SETUP] Successfully synced "
+                f"{len(synced)} command(s)"
             )
 
             for cmd in synced:
                 print(f"[COMMAND] /{cmd.name}")
 
         except Exception as e:
-            print(f"[ERROR] Command sync failed: {e}")
+            print(f"[ERROR] Sync failed: {type(e).__name__}: {e}")
 
 client = MyClient()
 
@@ -73,7 +69,6 @@ async def on_ready():
     name="rename",
     description="ユーザーのニックネームを変更します"
 )
-@app_commands.guilds(discord.Object(id=GUILD_ID))
 @app_commands.describe(
     member="名前を変更するユーザー",
     new_name="新しいニックネーム"
