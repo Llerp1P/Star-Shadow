@@ -4,6 +4,8 @@ from discord import app_commands
 
 TOKEN = os.environ["TOKEN"]
 
+GUILD_ID = 1497104058987708547  # ←ここをあなたのサーバーIDに変更
+
 intents = discord.Intents.default()
 intents.guilds = True
 
@@ -13,7 +15,13 @@ class MyClient(discord.Client):
         self.tree = app_commands.CommandTree(self)
 
     async def setup_hook(self):
-        await self.tree.sync()
+        guild = discord.Object(id=GUILD_ID)
+
+        self.tree.copy_global_to(guild=guild)
+
+        synced = await self.tree.sync(guild=guild)
+
+        print(f"Synced {len(synced)} command(s)")
 
 client = MyClient()
 
@@ -54,12 +62,6 @@ async def rename(
     except discord.Forbidden:
         await interaction.response.send_message(
             "❌ BOTのロールを対象ユーザーより上に配置してください。",
-            ephemeral=True
-        )
-
-    except Exception as e:
-        await interaction.response.send_message(
-            f"❌ エラー: {e}",
             ephemeral=True
         )
 
