@@ -1,11 +1,8 @@
 import os
 import discord
 from discord.ext import commands
-from dotenv import load_dotenv
 
-load_dotenv()
-
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.environ["TOKEN"]
 
 intents = discord.Intents.default()
 intents.guilds = True
@@ -20,7 +17,7 @@ bot = commands.Bot(
 async def on_ready():
     print(f"Logged in as {bot.user}")
 
-@bot.command()
+@bot.command(name="rename")
 @commands.has_permissions(manage_nicknames=True)
 async def rename(ctx, member: discord.Member, *, new_name: str):
     try:
@@ -30,17 +27,15 @@ async def rename(ctx, member: discord.Member, *, new_name: str):
         )
 
         await ctx.send(
-            f"{member.mention} のサーバーニックネームを\n"
-            f"『{new_name}』に変更しました。"
+            f"✅ {member.mention} の名前を「{new_name}」に変更しました。"
         )
 
     except discord.Forbidden:
         await ctx.send(
-            "権限不足です。\n"
-            "BOTのロールを対象ユーザーより上にしてください。"
+            "❌ 権限不足です。BOTのロールを対象ユーザーより上にしてください。"
         )
 
     except Exception as e:
-        await ctx.send(f"エラー: {e}")
+        await ctx.send(f"❌ エラー: {e}")
 
 bot.run(TOKEN)
